@@ -46,7 +46,7 @@ function Count() {
   }, []);
 
   return (
-    <div className='countx'>
+    <div className='countx' id='test'>
         <h3>Yılbaşı Geçmeden Sende Arkadaşınla Çekiliş Yap!</h3>
       <div id="countDown" className="countdown" ref={countDownRef}>
         <div className="time">
