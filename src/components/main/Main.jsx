@@ -14,8 +14,16 @@ const Main = () => {
   const [name, setName] = useState("");
   const [team, setTeam] = useState("");
   const [participants, setParticipants] = useState(participant);
+  const [teamParticipants, setTeamParticipants] = useState([]);
   const [eslesmeler, setEslesmeler] = useState([]);
   const [matchedUser, setMatchedUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleChange = (event) => {
+    setTeam(event.target.value);
+    // Her takım adı değiştikçe hata mesajını temizle
+    setErrorMessage("");
+  };
 
   // Sayfa yenilendiğinde localStorage'e veri yaz
   useEffect(() => {
@@ -56,7 +64,7 @@ const Main = () => {
         ...prevParticipants,
         response.data,
       ]);
-      console.log("Eklenen kullanıcı:", response.data);
+      // console.log("Eklenen kullanıcı:", response.data);
       setName("");
       // setTeam("");
     } catch (error) {
@@ -86,28 +94,45 @@ const Main = () => {
     }
   };
 
-  const handleClearParticipants = () => {
-    // Katılımcıları temizle
-    setParticipants([]);
+  const handleClearParticipants = async () => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:5000/api/raffleEntry/delete-all-users"
+      );
+      // console.log(response.data);
+      if (response) {
+        setParticipants([]);
+        setTeamParticipants([]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleMatchUsers = async (team) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/raffleEntry/match-users/${team}`
-      );
+    // console.log(team);
+    if (team) {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/raffleEntry/match-users/${team}`
+        );
 
-      if (response.data.success) {
-        setMatchedUser(seeRaffleMatch);
-        handleClearParticipants();
-      } else {
-        console.error(response.data.message);
+        if (response.data.success) {
+          setMatchedUser(seeRaffleMatch);
+          setParticipants([]);
+          // setTeamParticipants([])
+          // handleClearParticipants();
+        } else {
+          console.error(response.data.message);
+        }
+      } catch (error) {
+        console.error(
+          "Ekipler arasında eşleşme yapılırken bir hata oluştu",
+          error
+        );
       }
-    } catch (error) {
-      console.error(
-        "Ekipler arasında eşleşme yapılırken bir hata oluştu",
-        error
-      );
+    } else {
+      alert("Çekiliş için yeterli katılımcı mevcut değildi!");
     }
   };
 
@@ -135,7 +160,7 @@ const Main = () => {
   const showHandleRaffle = async ({ team, name }) => {
     try {
       const endpointURL = `http://localhost:5000/api/raffleEntry/match-users/${team}/${name}`;
-      console.log(endpointURL);
+      // console.log(endpointURL);
       const response = await axios.get(endpointURL);
       if (response) {
         setEslesmeler(response.data.matchedUser.name);
@@ -144,12 +169,34 @@ const Main = () => {
           "Herhangi bir kişi bulunamamıştır! Takım adını ve katılımcın adını kontrol ediniz"
         );
       }
+      // setTeam("");
+      // setName("");
       // Endpoint'ten gelen verileri kullanma
     } catch (error) {
       console.error("Hata:", error);
       alert(
         "Herhangi bir kişi bulunamamıştır! Takım adını ve katılımcın adını kontrol ediniz"
       );
+    }
+  };
+
+  const handleShowparticipants = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/raffleEntry/get-teams/${team}`
+      );
+      // const team = response.data.team;
+      console.log(response.data.team.members.length);
+      if (response.data.team.members.length > 0) {
+        setTeamParticipants(response.data.team.members);
+        // console.log(teamParticipants);
+      } else {
+        setTeamParticipants([]);
+        setErrorMessage("Bu takımda katılımcı bulunmamaktadır.");
+      }
+    } catch (error) {
+      console.error("Error fetching team members", error);
+      alert("Takım ismini kontrol ediniz!");
     }
   };
   return (
@@ -167,41 +214,38 @@ const Main = () => {
               <input
                 type="text"
                 value={team}
-                className="form-control"
-                onChange={(e) => setTeam(e.target.value)}
+                className="form-control mt-3"
+                onChange={handleChange}
               />
             </label>
             <br />
-            <label>
+            <label className="mt-3">
               Katılımcı Adı:
               <input
                 type="text"
                 value={name}
-                class="form-control"
+                class="form-control mt-3"
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
             <br />
-
             <button type="submit" className="mt-3">
               Katılımcı Ekle
             </button>
           </form>
+          <button onClick={handleShowparticipants} className="mt-3">
+            Takımdaki katılımcıları Gör
+          </button>
         </div>
 
         {/* Diğer İçerikler */}
-        <div className="flex-item2">
-          <h2>Katılımcı Listesi</h2>
+        <div className="flex-item2" id="participants">
+          <h3 className="mt-4">Katılımcı Listesi</h3>
           <div className="flex-item2-container">
             {participants <= 0 ? (
-              <p>Henüz katılımcı yok.</p>
+              <p></p>
             ) : (
               <table>
-                <thead>
-                  <tr>
-                    <th>Katılımcı</th>
-                  </tr>
-                </thead>
                 <tbody>
                   <ul>
                     {participants.map((participant, index) => (
@@ -229,12 +273,19 @@ const Main = () => {
         </div>
 
         <div className="flex-item3">
-          <button
-            className="cek"
-            onClick={() => handleMatchUsers(participants[0].team)}
-          >
-            Çekiliş Yap
-          </button>
+          {participants.length > 2 ? (
+            <button
+              className="cek"
+              onClick={() => handleMatchUsers(participants[0].team)}
+            >
+              Çekiliş Yap
+            </button>
+          ) : (
+            <p className="alert alert-danger">
+              Çekiliş için en az 3 katılımcı olması gerekmektedir!
+            </p>
+          )}
+
           <div id="modal" className="mt-3">
             <div className="flex-item2-container ">
               {/* Button trigger modal */}
@@ -317,6 +368,43 @@ const Main = () => {
             </div>
           </div>
         </div>
+
+        {teamParticipants.length <= 0 ? (
+          <div className="flex-item4">
+            <p className="mt-4">
+              Takımınızdaki katılımcıları görmek için takım adını yazdıktan
+              sonra takımdaki katılımcıları gör butonuna tıklayabilirsiniz...
+            </p>
+            {errorMessage && (
+              <p className="alert alert-danger">{errorMessage}</p>
+            )}
+          </div>
+        ) : (
+          <div className="flex-item4">
+            <h3 className="mt-3">Takım Listesi</h3>
+            <table>
+              <tbody>
+                <ul>
+                  {teamParticipants.map((katilimci) => (
+                    <li key={katilimci._id}>
+                      {katilimci.name}
+                      <i
+                        style={{ color: "white" }}
+                        className="fas fa-trash-alt sil "
+                        onClick={() => handleClearParticipant(participant.name)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </tbody>
+            </table>
+            {teamParticipants.length > 0 && (
+              <button className="silk" onClick={handleClearParticipants}>
+                Listeyi Temizle
+              </button>
+            )}
+          </div>
+        )}
       </div>
       <br />
     </div>

@@ -45,7 +45,7 @@ input {
 
 button {
   padding: 8px 16px;
-  background-color: #4caf50;
+  background-color: rgba(0, 255, 0, 0.5);
   color: white;
   border: none;
   cursor: pointer;
@@ -54,6 +54,7 @@ button {
 
 button:hover {
   background-color: #45a049;
+  transition: 0.9s;
 }
 
 ul {
@@ -95,18 +96,17 @@ li {
   margin-bottom: 100px;
   margin-top: 50px;
 }
-.flex-item1 form {
+/* .flex-item1 form {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
   margin-bottom: 30px;
-}
+} */
 
 .flex-item3 {
-  width: 60%;
+  width: 20%;
   order: 2;
-  /* margin-top: 0px !important; */
   margin-bottom: 30px;
 }
 .flex-item2 {
@@ -119,18 +119,15 @@ li {
   margin-top: -50px;
   overflow-y: auto;
 }
-.flex-item2-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 .flex-item4 {
-  width: 30%;
+  width: 40%;
   order: 2;
   border: 1px solid #fff7f7;
   border-radius: 30px;
-  height: 550px;
-  margin-top: -100px;
+  height: 350px;
+  margin-top: -50px;
+  overflow-y: auto;
 }
 
 .table-container {
@@ -156,11 +153,12 @@ table {
 .modalBtn {
   border: none;
   font-size: large;
-  background-color: #4caf50;
+  background-color: rgba(0, 255, 0, 0.5);
   color: white;
 }
 .modalBtn:hover {
   background-color: #45a049;
+  transition: 0.9s;
 }
 #modal-footer {
   justify-content: start !important;
@@ -182,6 +180,9 @@ table {
   }
   .flex-item4 {
     height: 400px;
+  }
+  .flex-item1 form {
+    flex-direction: column;
   }
 }
 /* 
@@ -243,10 +244,20 @@ header {
   }
 
   .silk {
-    width: 100%; /* Genişlik tüm ekranı kaplasın */
+    display: inline;
   }
 }
-
+#participants {
+  position: relative;
+}
+#participants span {
+  position: absolute;
+  top: 5px;
+  right: 13px;
+  border-radius: 50px;
+  padding: 3px;
+  font-size: 12px;
+}
 @media (max-width: 767px) {
   .flex-container {
     overflow: auto;
