@@ -86,6 +86,7 @@ const Main = () => {
           (participant) => participant.name !== name
         );
         setParticipants(updatedParticipants);
+        setTeamParticipants(updatedParticipants);
       } else {
         console.error(response.data.message);
       }
@@ -391,7 +392,7 @@ const Main = () => {
                       <i
                         style={{ color: "white" }}
                         className="fas fa-trash-alt sil "
-                        onClick={() => handleClearParticipant(participant.name)}
+                        onClick={() => handleClearParticipant(katilimci.name)}
                       />
                     </li>
                   ))}
